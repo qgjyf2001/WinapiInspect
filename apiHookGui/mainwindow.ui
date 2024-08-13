@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1092</width>
-    <height>440</height>
+    <width>1218</width>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,18 +17,21 @@
    <widget class="QComboBox" name="processList">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>150</y>
+      <x>190</x>
+      <y>140</y>
       <width>231</width>
       <height>24</height>
      </rect>
+    </property>
+    <property name="editable">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>150</y>
+      <x>90</x>
+      <y>140</y>
       <width>101</width>
       <height>19</height>
      </rect>
@@ -40,8 +43,8 @@
    <widget class="QPushButton" name="refreshButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>150</y>
+      <x>440</x>
+      <y>140</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -53,8 +56,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>210</y>
+      <x>90</x>
+      <y>200</y>
       <width>69</width>
       <height>19</height>
      </rect>
@@ -66,8 +69,8 @@
    <widget class="QLineEdit" name="dllPath">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>210</y>
+      <x>190</x>
+      <y>200</y>
       <width>231</width>
       <height>24</height>
      </rect>
@@ -76,8 +79,8 @@
    <widget class="QPushButton" name="browseButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>210</y>
+      <x>440</x>
+      <y>200</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -89,8 +92,8 @@
    <widget class="QPushButton" name="injectButton">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>270</y>
+      <x>190</x>
+      <y>600</y>
       <width>221</width>
       <height>28</height>
      </rect>
@@ -102,18 +105,18 @@
    <widget class="QTextEdit" name="debugWindow">
     <property name="geometry">
      <rect>
-      <x>520</x>
+      <x>680</x>
       <y>60</y>
-      <width>501</width>
-      <height>301</height>
+      <width>511</width>
+      <height>601</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>250</y>
+      <x>430</x>
+      <y>590</y>
       <width>111</width>
       <height>71</height>
      </rect>
@@ -126,8 +129,8 @@ Test</string>
    <widget class="QPushButton" name="injectNewProcessButton">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>320</y>
+      <x>170</x>
+      <y>640</y>
       <width>261</width>
       <height>28</height>
      </rect>
@@ -136,13 +139,189 @@ Test</string>
      <string>Inject By Starting New Process</string>
     </property>
    </widget>
+   <widget class="QRadioButton" name="hookAllRadioButton">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>280</y>
+      <width>231</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hook All Imported Functions
+(Can't inspect args)</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="hookSelectedRatioButton">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>280</y>
+      <width>211</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hook Selected Functions
+(Can inspect args)</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="selectFunctionList">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>340</y>
+      <width>181</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QListView {
+    outline: none;
+}
+
+QListWidget::item {
+    background-color: #ffffff;
+    color: #000000;
+    border: transparent;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+QListWidget::item:hover {
+    background-color: #f5f5f5;
+}
+
+QListWidget::item:selected {
+    border-left: 5px solid #777777;
+}</string>
+    </property>
+    <property name="selectionRectVisible">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="removeFunctionButton">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>410</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Remove</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addFunctionButton">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>520</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>450</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>WinApi Name:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="removedWinapiList">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>490</y>
+      <width>121</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="editable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="selectDllList">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>340</y>
+      <width>181</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QListView {
+    outline: none;
+}
+
+QListWidget::item {
+    background-color: #ffffff;
+    color: #000000;
+    border: transparent;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+QListWidget::item:hover {
+    background-color: #f5f5f5;
+}
+
+QListWidget::item:selected {
+    border-left: 5px solid #777777;
+}</string>
+    </property>
+    <property name="selectionRectVisible">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="removeDllButton">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>410</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Remove</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addDllButton">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>470</y>
+      <width>91</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Browse and
+ Add DLL</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1092</width>
+     <width>1218</width>
      <height>25</height>
     </rect>
    </property>

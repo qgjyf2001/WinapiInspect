@@ -5,8 +5,8 @@ ApiHook::ApiHook()
 {
 }
 
+registry::registry_ registry::clazz_;
 void OnAttach() {
-    HookManager::instance().startHook();
     auto pid = GetCurrentProcessId();
     HookManager::instance().outputFunction = [pid](std::string s){
         s = "[pid " + std::to_string(pid) + "]" + s;
@@ -30,6 +30,7 @@ void OnAttach() {
             DisconnectNamedPipe(hPipe);
         }
     };
+    HookManager::instance().startHook();
     HookManager::instance().output("attaching process " + std::to_string(pid));
 }
 

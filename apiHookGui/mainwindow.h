@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <thread>
 #include <mutex>
+#include <queue>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,6 +22,8 @@ public:
     HANDLE hPipe;
 
 private slots:
+    void on_timeout();
+
     void on_refreshButton_clicked();
 
     void on_browseButton_clicked();
@@ -31,12 +34,29 @@ private slots:
 
     void on_injectNewProcessButton_clicked();
 
+    void on_hookSelectedRatioButton_clicked();
+
+    void on_hookAllRadioButton_clicked();
+
+    void on_removeFunctionButton_clicked();
+
+    void on_addFunctionButton_clicked();
+
+    void on_removeDllButton_clicked();
+
+    void on_addDllButton_clicked();
+
 private:
     void refreshProcessList();
     bool dllInject(DWORD pid);
+    void saveHookFunctionList();
+    bool hookAll = false;
     std::string dllPath;
     Ui::MainWindow *ui;
+    QTimer *timer;
     QThread* pipeThread;
     std::mutex mutex;
+    std::queue<std::string> debugMsgQueue;
+
 };
 #endif // MAINWINDOW_H

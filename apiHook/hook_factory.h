@@ -5,8 +5,11 @@
 #include <vector>
 #include "detours.h"
 #include "magic_enum.h"
+#include "map"
 #include <sstream>
 #include <functional>
+#include <iostream>
+#include <unordered_set>
 std::tuple hookFunctionDefs = {
 #include "hook_function_def.txt"
 };
@@ -40,9 +43,34 @@ public:
         }
     }
     void startHook() {
+        std::map<std::string_view, PVOID> functionNameMap;
+        std::apply([&functionNameMap](auto ...args){
+            int index = 0;
+            ((functionNameMap[magic_enum::enum_name(static_cast<hookFunctionEnum>(index++))]=(PVOID)args),...);
+        }, hookFunctionDefs);
+        for (auto& [k, v]: functionNameMap) {
+            output(std::to_string((int)v) + ":" + std::string(k));
+        }
+
+        std::unordered_set<PVOID> whiteList;
+        char path[256] = {0};
+        GetTempPathA(sizeof(path), path);
+        strcat(path, "hook_function_list.txt");
+        auto file = fopen(path,"r");
+        while (fscanf(file,"%s", path) != EOF) {
+            auto iter = functionNameMap.find(path);
+            if (iter != functionNameMap.end()) {
+                whiteList.insert(iter->second);
+            }
+        }
+        fclose(file);
+
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
         for (auto &[pPointer, pDetour] : hookFunctions) {
+            if (whiteList.find(pPointer) == whiteList.end()) {
+                continue;
+            }
             DetourAttach(&pPointer, pDetour);
         }
         DetourTransactionCommit();
@@ -114,5 +142,4 @@ protected:
     };
     static registry_ clazz_;
 };
-registry::registry_ registry::clazz_;
 #endif // HOOK_FACTORY_H

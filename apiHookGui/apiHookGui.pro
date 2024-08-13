@@ -18,8 +18,10 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
-LIBS += psapi.lib shlwapi.lib user32.lib
+LIBS += psapi.lib shlwapi.lib user32.lib ws2_32.lib advapi32.lib
 
+INCLUDEPATH += "../apiHook"
+INCLUDEPATH += "E:/git/detours/include"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -2,10 +2,12 @@
 #include "ui_mainwindow.h"
 #include "windows.h"
 #include "psapi.h"
+#include "QTimer"
 #include "QDebug"
 #include <QFileDialog>
 #include "Shlwapi.h"
 #include <QThread>
+#include "hook_factory.h"
 
 static constexpr auto pipeName = "\\\\.\\pipe\\hookCommutePipe";
 static constexpr auto BuffSize = 1024;
@@ -56,6 +58,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dllPath->setText(QString::fromStdString(dllPath));
     pipeThread = new PipeThread(this);
     pipeThread->start();
+    for (size_t i = 0; i < std::tuple_size_v<decltype(hookFunctionDefs)>; i++) {
+        std::string enum_name = std::string(magic_enum::enum_name(static_cast<hookFunctionEnum>(i)));
+        ui->selectFunctionList->addItem(QString::fromStdString(enum_name));
+    }
+    ui->removedWinapiList->setAutoCompletion(true);
+    timer = new QTimer();
+    timer->setInterval(50);
+    connect(timer, &QTimer::timeout, this, &MainWindow::on_timeout);
+    timer->start();
 }
 
 MainWindow::~MainWindow()
@@ -89,7 +100,23 @@ void MainWindow::refreshProcessList(){
     }
 }
 
+void MainWindow::saveHookFunctionList() {
+    char path[256] = {0};
+    GetTempPathA(sizeof(path), path);
+    strcat(path, "hook_function_list.txt");
+    auto file = fopen(path,"w");
+    if (ui->hookSelectedRatioButton->isChecked()) {
+        auto functionSize = ui->selectFunctionList->count();
+        for (int i = 0; i < functionSize; i++) {
+            QString functionName = ui->selectFunctionList->item(i)->text();
+            fprintf(file, "%s\n", functionName.toLocal8Bit().data());
+        }
+    }
+    fclose(file);
+}
+
 bool MainWindow::dllInject(DWORD pid) {
+    saveHookFunctionList();
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     LPVOID pRemoteAddress = VirtualAllocEx(
         hProcess,
@@ -142,8 +169,17 @@ void MainWindow::on_browseButton_clicked()
 
 void MainWindow::printDebugMessage(std::string s) {
     std::lock_guard<std::mutex> lock_guard(mutex);
-    ui->debugWindow->append(QString::fromLocal8Bit(s.data()));
-    ui->debugWindow->moveCursor(QTextCursor::End);
+    debugMsgQueue.push(s);
+}
+
+void MainWindow::on_timeout() {
+    std::lock_guard<std::mutex> lock_guard(mutex);
+    while (!debugMsgQueue.empty()) {
+        auto s = debugMsgQueue.front();
+        ui->debugWindow->append(QString::fromLocal8Bit(s.data()));
+        ui->debugWindow->moveCursor(QTextCursor::End);
+        debugMsgQueue.pop();
+    }
 }
 
 void MainWindow::on_injectButton_clicked()
@@ -173,5 +209,58 @@ void MainWindow::on_injectNewProcessButton_clicked()
     CreateProcessA(NULL, filePath.toLocal8Bit().data(), NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
     dllInject(pi.dwProcessId);
     ResumeThread(pi.hThread);
+}
+
+
+void MainWindow::on_hookSelectedRatioButton_clicked()
+{
+    hookAll = false;
+}
+
+
+void MainWindow::on_hookAllRadioButton_clicked()
+{
+    hookAll = true;
+}
+
+
+void MainWindow::on_removeFunctionButton_clicked()
+{
+    auto item = ui->selectFunctionList->currentItem();
+    if (item != nullptr) {
+        ui->removedWinapiList->addItem(item->text());
+        ui->selectFunctionList->removeItemWidget(item);
+        delete item;
+    }
+}
+
+
+void MainWindow::on_addFunctionButton_clicked()
+{
+    auto item = ui->removedWinapiList->currentText();
+    if (item.size() != 0) {
+        ui->selectFunctionList->addItem(item);
+        ui->removedWinapiList->removeItem(ui->removedWinapiList->currentIndex());
+    }
+}
+
+
+void MainWindow::on_removeDllButton_clicked()
+{
+    auto item = ui->selectDllList->currentItem();
+    if (item != nullptr) {
+        ui->selectDllList->removeItemWidget(item);
+        delete item;
+    }
+}
+
+
+void MainWindow::on_addDllButton_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(nullptr, "select a dll to hook",
+                                                    QCoreApplication::applicationDirPath(), "Dynamic Link Library(*.dll)");
+    if (filePath != nullptr) {
+        ui->selectDllList->addItem(filePath);
+    }
 }
 
