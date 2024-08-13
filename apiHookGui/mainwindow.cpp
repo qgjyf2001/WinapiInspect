@@ -37,7 +37,7 @@ protected:
                 char buff[BuffSize] = {0};
                 DWORD readLength = 0;
                 flag = ReadFile(mainWindow->hPipe, buff, BuffSize, &readLength, NULL);
-                if (flag != 0) {
+                if (flag != 0 && readLength > 0) {
                     mainWindow->printDebugMessage(std::string(buff, readLength));
                 }
             }
@@ -142,7 +142,7 @@ void MainWindow::on_browseButton_clicked()
 
 void MainWindow::printDebugMessage(std::string s) {
     std::lock_guard<std::mutex> lock_guard(mutex);
-    ui->debugWindow->append(QString::fromStdString(s));
+    ui->debugWindow->append(QString::fromLocal8Bit(s.data()));
     ui->debugWindow->moveCursor(QTextCursor::End);
 }
 
@@ -157,5 +157,21 @@ void MainWindow::on_injectButton_clicked()
 void MainWindow::on_pushButton_clicked()
 {
     MessageBoxA(nullptr, "This is a test", "MessageBox Test", 0);
+}
+
+
+void MainWindow::on_injectNewProcessButton_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(nullptr, "select a process to start",
+                                                    QCoreApplication::applicationDirPath(), "Executable File(*.exe)");
+    if (filePath.size() == 0) {
+        return;
+    }
+    STARTUPINFOA si = {0};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi;
+    CreateProcessA(NULL, filePath.toLocal8Bit().data(), NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    dllInject(pi.dwProcessId);
+    ResumeThread(pi.hThread);
 }
 

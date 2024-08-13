@@ -34,7 +34,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>process list:</string>
+     <string>Process List:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="refreshButton">
@@ -47,7 +47,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>refresh</string>
+     <string>Refresh</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -60,7 +60,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>dll path:</string>
+     <string>DLL Path:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="dllPath">
@@ -89,14 +89,14 @@
    <widget class="QPushButton" name="injectButton">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>280</y>
-      <width>93</width>
+      <x>150</x>
+      <y>270</y>
+      <width>221</width>
       <height>28</height>
      </rect>
     </property>
     <property name="text">
-     <string>Inject</string>
+     <string>Inject Selected Process</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="debugWindow">
@@ -112,14 +112,28 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>330</y>
-      <width>191</width>
+      <x>390</x>
+      <y>250</y>
+      <width>111</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>MessageBox
+Test</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="injectNewProcessButton">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>320</y>
+      <width>261</width>
       <height>28</height>
      </rect>
     </property>
     <property name="text">
-     <string>MessageBox Test</string>
+     <string>Inject By Starting New Process</string>
     </property>
    </widget>
   </widget>

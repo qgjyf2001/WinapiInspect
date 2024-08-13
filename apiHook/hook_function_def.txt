@@ -1,2 +1,4 @@
 ﻿MessageBoxA,
-CreateWindowExA
+CreateWindowExA,
+recv,
+RegOpenKeyExA

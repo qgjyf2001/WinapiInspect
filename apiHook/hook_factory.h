@@ -77,15 +77,16 @@ struct DebugHelper<index, returnType (__stdcall *)(Args...)> {
         auto functor = (Functor)HookManager::instance().getOriginFunc(index);
         auto result = functor(args...);
         auto function_name = magic_enum::enum_name(static_cast<hookFunctionEnum>(index));
+        auto title = "[" + std::string(function_name) + "_" + std::to_string(rand()%1000) + "]";
         {
             std::stringstream ss;
-            ss<<"function_name:"<<function_name;
-            HookManager::instance().output(ss.str());;
+            ss<<title<<"args:";
+            ((ss<<formatArg(args)<<","),...);
+            HookManager::instance().output(ss.str());
         }
         {
             std::stringstream ss;
-            ss<<"args:";
-            ((ss<<formatArg(args)<<","),...);
+            ss<<title<<"res:"<<result;
             HookManager::instance().output(ss.str());
         }
         return result;

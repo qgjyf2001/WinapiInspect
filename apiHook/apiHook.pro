@@ -20,7 +20,7 @@ HEADERS += \
     hook_function_def.txt
 
 INCLUDEPATH += "E:/git/detours/include"
-LIBS += user32.lib "E:/git/detours/lib.X86/detours.lib"
+LIBS += user32.lib ws2_32.lib advapi32.lib "E:/git/detours/lib.X86/detours.lib"
 
 # Default rules for deployment.
 unix {

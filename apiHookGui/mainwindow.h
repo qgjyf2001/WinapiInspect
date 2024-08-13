@@ -29,6 +29,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_injectNewProcessButton_clicked();
+
 private:
     void refreshProcessList();
     bool dllInject(DWORD pid);
