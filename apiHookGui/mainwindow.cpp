@@ -100,6 +100,21 @@ void MainWindow::refreshProcessList(){
     }
 }
 
+void MainWindow::saveHookDllList() {
+    char path[256] = {0};
+    GetTempPathA(sizeof(path), path);
+    strcat(path, "hook_dll_list.txt");
+    auto file = fopen(path,"w");
+    if (ui->hookAllRadioButton->isChecked()) {
+        auto functionSize = ui->selectDllList->count();
+        for (int i = 0; i < functionSize; i++) {
+            QString functionName = ui->selectDllList->item(i)->text();
+            fprintf(file, "%s\n", functionName.toLocal8Bit().data());
+        }
+    }
+    fclose(file);
+}
+
 void MainWindow::saveHookFunctionList() {
     char path[256] = {0};
     GetTempPathA(sizeof(path), path);
@@ -117,6 +132,7 @@ void MainWindow::saveHookFunctionList() {
 
 bool MainWindow::dllInject(DWORD pid) {
     saveHookFunctionList();
+    saveHookDllList();
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     LPVOID pRemoteAddress = VirtualAllocEx(
         hProcess,

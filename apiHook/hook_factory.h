@@ -39,7 +39,7 @@ public:
     }
     void output(std::string s) {
         if (outputFunction != nullptr) {
-            outputFunction(s);
+            outputFunction("[api hook]" + s);
         }
     }
     void startHook() {
@@ -48,9 +48,6 @@ public:
             int index = 0;
             ((functionNameMap[magic_enum::enum_name(static_cast<hookFunctionEnum>(index++))]=(PVOID)args),...);
         }, hookFunctionDefs);
-        for (auto& [k, v]: functionNameMap) {
-            output(std::to_string((int)v) + ":" + std::string(k));
-        }
 
         std::unordered_set<PVOID> whiteList;
         char path[256] = {0};
@@ -60,20 +57,18 @@ public:
         while (fscanf(file,"%s", path) != EOF) {
             auto iter = functionNameMap.find(path);
             if (iter != functionNameMap.end()) {
+                output(std::string("attaching ") + path);
                 whiteList.insert(iter->second);
             }
         }
         fclose(file);
 
-        DetourTransactionBegin();
-        DetourUpdateThread(GetCurrentThread());
         for (auto &[pPointer, pDetour] : hookFunctions) {
             if (whiteList.find(pPointer) == whiteList.end()) {
                 continue;
             }
             DetourAttach(&pPointer, pDetour);
         }
-        DetourTransactionCommit();
     }
 private:
     std::vector<std::pair<PVOID,PVOID>> hookFunctions;

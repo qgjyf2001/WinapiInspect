@@ -15,6 +15,7 @@ SOURCES += \
 HEADERS += \
     apiHook_global.h \
     apihook.h \
+    hook_dll.h \
     hook_factory.h \
     magic_enum.h \
     hook_function_def.txt

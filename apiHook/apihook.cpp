@@ -1,19 +1,23 @@
 ﻿#include "apihook.h"
+#include "hook_dll.h"
 #include <iostream>
 
 ApiHook::ApiHook()
 {
 }
 
+
+auto OldMessageBox = MessageBoxA;
+
 registry::registry_ registry::clazz_;
 void OnAttach() {
     auto pid = GetCurrentProcessId();
-    HookManager::instance().outputFunction = [pid](std::string s){
+    auto outputFunction = [pid](std::string s){
         s = "[pid " + std::to_string(pid) + "]" + s;
-        int flag = WaitNamedPipeA(pipeName, NMPWAIT_WAIT_FOREVER);
+        int flag = HookDllManager::instance().getRealFunction(WaitNamedPipeA)(pipeName, NMPWAIT_WAIT_FOREVER);
         if (flag != 0) {
             DWORD writeLength = 0;
-            auto hPipe = CreateFileA(pipeName,
+            auto hPipe = HookDllManager::instance().getRealFunction(CreateFileA)(pipeName,
                                GENERIC_READ | GENERIC_WRITE,
                                0,
                                NULL,
@@ -26,12 +30,21 @@ void OnAttach() {
                 hPipe = NULL;
                 return;
             }
-            WriteFile( hPipe, s.data(), s.length()+1, &writeLength, NULL);
-            DisconnectNamedPipe(hPipe);
+            HookDllManager::instance().getRealFunction(WriteFile)( hPipe, s.data(), s.length()+1, &writeLength, NULL);
+            HookDllManager::instance().getRealFunction(DisconnectNamedPipe)(hPipe);
         }
     };
+
+
+    DetourTransactionBegin();
+    DetourUpdateThread(GetCurrentThread());
+    outputFunction("attaching process " + std::to_string(pid));
+    HookManager::instance().outputFunction = outputFunction;
+    HookDllManager::instance().outputFunction = outputFunction;
     HookManager::instance().startHook();
-    HookManager::instance().output("attaching process " + std::to_string(pid));
+    HookDllManager::instance().startHook();
+    DetourTransactionCommit();
+    HookDllManager::instance().feedback();
 }
 
 BOOL WINAPI DllMain(

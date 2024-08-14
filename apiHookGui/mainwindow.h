@@ -50,6 +50,7 @@ private:
     void refreshProcessList();
     bool dllInject(DWORD pid);
     void saveHookFunctionList();
+    void saveHookDllList();
     bool hookAll = false;
     std::string dllPath;
     Ui::MainWindow *ui;
