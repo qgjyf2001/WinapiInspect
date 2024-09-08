@@ -274,9 +274,26 @@ void MainWindow::on_removeDllButton_clicked()
 void MainWindow::on_addDllButton_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(nullptr, "select a dll to hook",
-                                                    QCoreApplication::applicationDirPath(), "Dynamic Link Library(*.dll)");
+                                                    "C:/windows/system32", "Dynamic Link Library(*.dll)");
     if (filePath != nullptr) {
         ui->selectDllList->addItem(filePath);
+    }
+}
+
+
+void MainWindow::on_lineEdit_textChanged(const QString &arg1)
+{
+    ui->debugWindow->moveCursor(QTextCursor::End);
+    if (arg1.size() != 0) {
+        if(ui->debugWindow->find(arg1,QTextDocument::FindBackward)) {
+            QPalette palette = ui->debugWindow->palette();
+            palette.setColor(QPalette::Highlight,palette.color(QPalette::Active,QPalette::Highlight));
+            ui->debugWindow->setPalette(palette);
+        }
+    } else {
+        auto cursor = ui->debugWindow->textCursor();
+        cursor.clearSelection();
+        ui->debugWindow->setTextCursor(cursor);
     }
 }
 

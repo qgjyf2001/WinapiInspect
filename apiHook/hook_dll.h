@@ -10,16 +10,17 @@ PVOID reportFunctionCall(unsigned char* address);
 
 __declspec(naked) void __cdecl traceFunction() {
     __asm{
-        pop eax
         pushad
+        mov eax, [esp + 32]
         push eax
         call reportFunctionCall
-        mov [esp+32], eax
+        mov [esp + 36], eax
         pop eax
         popad
-        jmp eax
+        ret
     }
 }
+
 class HookDllManager {
 private:
     HookDllManager() = default;
@@ -32,8 +33,8 @@ private:
             PVOID function_addr = (PVOID)GetProcAddress((HMODULE)pContext, pszName);
             auto& pair = instance().functor_map[function_addr];
             pair = {function_addr, pszName};
-            if (DetourAttach(&pair.first, (PVOID)traceFunction) == NO_ERROR) {
-                instance().output("attaching " + std::string(pszName));
+            if (DetourAttach(&pair.first, (PVOID)traceFunction) != NO_ERROR) {
+                instance().functor_map.erase(function_addr);
             }
         }
         return true;
@@ -58,6 +59,24 @@ public:
     void feedback() {
         for (auto& [originFunc, funcPair] : functor_map) {
             SIZE_T writen;
+            char buff[5] = {0};
+            getRealFunction(ReadProcessMemory)(getRealFunction(GetCurrentProcess)(), (LPVOID)originFunc, buff, 1, &writen);
+            if (buff[0] != '\xe9') {
+                instance().output("origin function JMP instruction not found, try attach " + std::string(funcPair.second) + " failed, reverting");
+                DetourDetach(&funcPair.first, (PVOID)traceFunction);
+                continue;
+            }
+
+            getRealFunction(ReadProcessMemory)(getRealFunction(GetCurrentProcess)(), (LPVOID)((unsigned char*)funcPair.first + 5), buff, 5, &writen);
+            if (buff[0] != '\xe9') {
+                instance().output("trampoline function JMP instruction not found, try attach " + std::string(funcPair.second) + " failed, reverting");
+                DetourDetach(&funcPair.first, (PVOID)traceFunction);
+                continue;
+            }
+
+            std::stringstream ss;
+            ss<<"attaching "<<std::string(funcPair.second) + ", address:"<<funcPair.first;
+            instance().output(ss.str());
             char call_addr[] = {'\xe8'};
             getRealFunction(WriteProcessMemory)(getRealFunction(GetCurrentProcess)(), (LPVOID)originFunc, call_addr, 1, &writen);
         }
