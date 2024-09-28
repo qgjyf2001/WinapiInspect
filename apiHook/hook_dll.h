@@ -6,21 +6,7 @@
 #include "detours.h"
 #include <unordered_map>
 #include <sstream>
-PVOID reportFunctionCall(unsigned char* address);
-
-__declspec(naked) void __cdecl traceFunction() {
-    __asm{
-        pushad
-        mov eax, [esp + 32]
-        push eax
-        call reportFunctionCall
-        mov [esp + 36], eax
-        pop eax
-        popad
-        ret
-    }
-}
-
+extern "C" void __cdecl traceFunction();
 class HookDllManager {
 private:
     HookDllManager() = default;
@@ -66,9 +52,19 @@ public:
                 DetourDetach(&funcPair.first, (PVOID)traceFunction);
                 continue;
             }
-
-            getRealFunction(ReadProcessMemory)(getRealFunction(GetCurrentProcess)(), (LPVOID)((unsigned char*)funcPair.first + 5), buff, 5, &writen);
-            if (buff[0] != '\xe9') {
+#if defined(_WIN64)
+            const auto offset = 6;
+            const auto check = [](char* buff){
+                return buff[0] == '\xff' && buff[1] == '\x25';
+            };
+#else
+            const auto offset = 5;
+            const auto check = [](char* buff){
+                return buff[0] == '\xe9';
+            };
+#endif
+            getRealFunction(ReadProcessMemory)(getRealFunction(GetCurrentProcess)(), (LPVOID)((unsigned char*)funcPair.first + offset), buff, 5, &writen);
+            if (check(buff)) {
                 instance().output("trampoline function JMP instruction not found, try attach " + std::string(funcPair.second) + " failed, reverting");
                 DetourDetach(&funcPair.first, (PVOID)traceFunction);
                 continue;
@@ -113,7 +109,7 @@ public:
 };
 
 
-PVOID reportFunctionCall(unsigned char* address) {
+extern "C" PVOID reportFunctionCall(unsigned char* address) {
     address -= 5;
     std::stringstream ss;
     ss << "[address " << (void*)address << "]";

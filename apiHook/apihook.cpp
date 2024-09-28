@@ -61,13 +61,13 @@ void OnAttach() {
     auto pid = GetCurrentProcessId();
     auto outputFunction = [pid](std::string s){
         s = "[pid " + std::to_string(pid) + "]" + s;
+//#define DEBUG_SELF
+#ifdef DEBUG_SELF
+        std::cout<<s<<std::endl;
+#else
         int flag = HookDllManager::instance().getRealFunction(WaitNamedPipeA)(pipeName, NMPWAIT_WAIT_FOREVER);
         if (flag != 0) {
             DWORD writeLength = 0;
-//#define DEBUG_SELF
-#ifdef DEBUG_SELF
-            std::cout<<s<<std::endl;
-#else
             auto hPipe = HookDllManager::instance().getRealFunction(CreateFileA)(pipeName,
                                GENERIC_READ | GENERIC_WRITE,
                                0,
@@ -83,8 +83,8 @@ void OnAttach() {
             }
             HookDllManager::instance().getRealFunction(WriteFile)( hPipe, s.data(), s.length()+1, &writeLength, NULL);
             HookDllManager::instance().getRealFunction(DisconnectNamedPipe)(hPipe);
-#endif
         }
+#endif
     };
     std::vector<HANDLE> handles;
 
